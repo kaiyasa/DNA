@@ -11,7 +11,7 @@ public class ExceptionUsingErrorListener extends BaseErrorListener {
 	public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
 			String msg, RecognitionException e) {
 		throw new ParseCancellationException(
-		String.format(ValidationException.message, line, charPositionInLine, "Syntax Error - " + msg));
+				new MessageFormatter().render(line, charPositionInLine, "Syntax Error - " + msg));
 	}
 
 }
