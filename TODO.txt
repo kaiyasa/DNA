@@ -1,0 +1,36 @@
+
+
+Interesting OO CPU
+https://codereview.stackexchange.com/questions/178883/cpu-emulator-in-java
+
+
+Java Look and Feel
+https://stackoverflow.com/questions/3954616/java-look-and-feel-lf
+
+Accessibility thread on ACE editor
+https://github.com/ajaxorg/ace/issues/2164
+
+ANTLR and the Web
+https://tomassetti.me/antlr-and-the-web/
+
+ANTLR target language for JavaScript
+https://github.com/antlr/antlr4/blob/master/doc/javascript-target.md
+
+ANTLR match all rules exactly once
+https://stackoverflow.com/questions/14934081/antlr4-matching-all-input-alternatives-exaclty-once
+
+Implementing autocomplete for ANTLR grammar
+https://blog.rapid7.com/2015/06/29/how-to-implement-antlr4-autocomplete/
+
+Sample AST building with ANTLR 4
+https://github.com/adamsiemion/antlr-java-ast
+https://stackoverflow.com/questions/29971097/how-to-create-ast-with-antlr4/29996191#29996191
+
+Reporting errors
+https://stackoverflow.com/questions/32381068/how-to-report-errors-from-antlr-4-visitor
+
+
+
+Eclipse hot keys
+https://dzone.com/articles/effective-eclipse-shortcut-key
+
