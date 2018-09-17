@@ -26,10 +26,14 @@ assignment
   ;
 
 expression
-  : expression op=('+'|'-') expression
-  | expression op=('*'|'/') expression
+  : expr1=expression op=('+'|'-') expr2=expression
+  | expr1=expression op=('*'|'/') expr2=expression
   | '(' expression ')'
-  | literal
+  | atom
+  ;
+
+atom
+  : literal
   | identifier
   ;
 
