@@ -8,20 +8,19 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
- * simple foundation class for building, configuring and visiting ANTLR 4
- * grammars
+ * simple foundation class for creating, setup and visiting ANTLR 4 grammars
  *
+ * @param <R>
+ *            return type used in the Visitor class
  * @param <P>
  *            parser class
  * @param <C>
  *            rule context class
- * @param <R>
- *            return type used in the Visitor class
  * @param <V>
  *            Visitor class
  */
-public abstract class ANTLR4ParseAssist<P extends Parser, C extends ParseTree, R, V extends ParseTreeVisitor<R>>
-		implements ParseAssist<P, R> {
+public abstract class ANTLR4ParseAssist<R, P extends Parser, C extends ParseTree, V extends ParseTreeVisitor<R>>
+		implements ParseAssist<R, P> {
 	public ANTLR4ParseAssist(ParserFactory<P> parserFactory, Supplier<V> visitorFactory, Function<P, C> ruleParser) {
 		this.parserFactory = parserFactory;
 		this.visitorFactory = visitorFactory;
