@@ -66,6 +66,6 @@ BUILD=target/classes
   java \
     -cp "${ANTLR_JAR}${SEP}${BUILD}${SEP}}${CLASSPATH}" \
     org.antlr.v4.gui.TestRig \
-    ${GRAMMAR:=Dna} \
+    ${GRAMMAR:=dna.antlr.Dna} \
     ${RULE:=xUnit} \
     "$@" | tree_print

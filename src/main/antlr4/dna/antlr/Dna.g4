@@ -7,30 +7,39 @@ xUnit
 
 statement
   : definition
-  | assignment
+  | codeStatement
   ;
 
 definition
-  : types identifier (',' identifier)*
+  : type identifier (',' identifier)*
   | 'struct' identifier '{' definition+ '}'
   ;
 
-types
+type
   : 'int'
   | 'string'
   | identifier
   ;
+
+codeStatement
+  : assignment
+    ;
 
 assignment
   : identifier '=' expression
   ;
 
 expression
-  : expr1=expression op=('+'|'-') expr2=expression
+  : '(' expr1=expression ')'
   | expr1=expression op=('*'|'/') expr2=expression
-  | '(' expression ')'
+  | expr1=expression op=('+'|'-') expr2=expression
+  | callSite
   | atom
   ;
+
+callSite
+  : identifier '(' expression (',' expression)* ')'
+    ;
 
 atom
   : literal
