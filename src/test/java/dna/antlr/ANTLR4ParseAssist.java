@@ -20,9 +20,9 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  * @param <V>
  *            Visitor class
  */
-public abstract class AbstractParseAssist<P extends Parser, C extends ParseTree, R, V extends ParseTreeVisitor<R>>
+public abstract class ANTLR4ParseAssist<P extends Parser, C extends ParseTree, R, V extends ParseTreeVisitor<R>>
 		implements ParseAssist<P, R> {
-	public AbstractParseAssist(ParserFactory<P> parserFactory, Supplier<V> visitorFactory, Function<P, C> ruleParser) {
+	public ANTLR4ParseAssist(ParserFactory<P> parserFactory, Supplier<V> visitorFactory, Function<P, C> ruleParser) {
 		this.parserFactory = parserFactory;
 		this.visitorFactory = visitorFactory;
 		this.ruleParser = ruleParser;
