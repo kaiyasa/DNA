@@ -11,13 +11,21 @@ statement
   ;
 
 definition
+  : simpleDefinition
+  | structuredDefinition
+  ;
+
+simpleDefinition
   : type identifier (',' identifier)*
-  | 'struct' identifier '{' definition+ '}'
+  ;
+
+structuredDefinition
+  : 'struct' identifier '{' definition+ '}'
   ;
 
 type
-  : 'int'
-  | 'string'
+  : K_int
+  | K_string
   | identifier
   ;
 
@@ -57,6 +65,10 @@ literal
 
 // lexer
 
+
+K_int : 'int' ;
+K_string : 'string' ;
+
 ID
   : [A-Za-z_][A-Za-z0-9_]*
   ;
@@ -73,3 +85,4 @@ WS
   : [ \t\r\n]+
   -> skip
   ;
+
