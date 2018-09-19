@@ -20,19 +20,6 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> {
 
 	private Map<String, Variable> symbols = new HashMap<>();
 
-	private TypeInfo map(TypeContext ctx) {
-		return visit(ctx, (type) -> {
-			if (type.identifier() != null)
-				throw new LogicException(type, "struct references unsupported");
-			else if (type.getToken(DnaParser.K_int, 0) != null)
-				return new IntType();
-			else if (type.getToken(DnaParser.K_string, 0) != null)
-				return new StringType();
-			else
-				throw new LogicException(type, "unknown type specifier category");
-		});
-	}
-
 	public Void run(CharStream source) {
 		parser = parserFactory.create(source, new ExceptionUsingErrorListener());
 
@@ -49,7 +36,16 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> {
 
 	@Override
 	public Void visitSimpleDefinition(SimpleDefinitionContext ctx) {
-		TypeInfo ti = map(ctx.type());
+		TypeInfo typeInfo = visit(ctx.type(), (type) -> {
+			if (type.identifier() != null)
+				throw new LogicException(type, "struct references unsupported");
+			else if (type.getToken(DnaParser.K_int, 0) != null)
+				return new IntType();
+			else if (type.getToken(DnaParser.K_string, 0) != null)
+				return new StringType();
+			else
+				throw new LogicException(type, "unknown type specifier category");
+		});
 
 		ctx.identifier().stream().forEach((definition) -> {
 			String name = definition.ID().getText();
@@ -59,7 +55,7 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> {
 				throw new ValidationException(definition, "redefinition of variable '%s' from line %d:%d", name,
 						old.line, old.charAt);
 			}
-			symbols.put(name, variable(definition.getStart(), name, ti));
+			symbols.put(name, variable(definition.getStart(), name, typeInfo));
 		});
 
 		return null;
