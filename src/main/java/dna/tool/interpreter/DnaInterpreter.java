@@ -6,7 +6,6 @@ import java.util.Map;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
 
-import dna.antlr.DnaBaseVisitor;
 import dna.antlr.DnaLexer;
 import dna.antlr.DnaParser;
 import dna.antlr.ExceptionUsingErrorListener;
@@ -15,32 +14,33 @@ import dna.antlr.ValidationException;
 import dna.antlr.DnaParser.SimpleDefinitionContext;
 import dna.antlr.DnaParser.TypeContext;
 
-public class DnaInterpreter extends DnaBaseVisitor<Void> {
+public class DnaInterpreter extends DnaCommonVisitor<Void> {
 	private ParserFactory<DnaParser> parserFactory = new ParserFactory<>(DnaLexer::new, DnaParser::new);
 	private DnaParser parser;
 
 	private Map<String, Variable> symbols = new HashMap<>();
 
-	private TypeInfo map(TypeContext type) {
-		return new DnaBaseVisitor<TypeInfo>() {
-			@Override
-			public TypeInfo visitType(TypeContext ctx) {
-				if (ctx.identifier() != null)
-					throw new ValidationException(ctx, "struct references unsupported");
-				else if (ctx.getToken(DnaParser.K_int, 0) != null)
-					return new IntType();
-				else if (ctx.getToken(DnaParser.K_string, 0) != null)
-					return new StringType();
-				else
-					throw new ValidationException(ctx, "unknown type specifier category");
-			}
-		}.visit(type);
+	private TypeInfo map(TypeContext ctx) {
+		return visit(ctx, (type) -> {
+			if (type.identifier() != null)
+				throw new LogicException(type, "struct references unsupported");
+			else if (type.getToken(DnaParser.K_int, 0) != null)
+				return new IntType();
+			else if (type.getToken(DnaParser.K_string, 0) != null)
+				return new StringType();
+			else
+				throw new LogicException(type, "unknown type specifier category");
+		});
 	}
 
 	public Void run(CharStream source) {
 		parser = parserFactory.create(source, new ExceptionUsingErrorListener());
 
 		return visit(parser.xUnit());
+	}
+
+	public Variable variable(String name) {
+		return symbols.get(name);
 	}
 
 	private Variable variable(Token token, String name, TypeInfo ti) {
@@ -63,9 +63,5 @@ public class DnaInterpreter extends DnaBaseVisitor<Void> {
 		});
 
 		return null;
-	}
-
-	public Variable variable(String name) {
-		return symbols.get(name);
 	}
 }
