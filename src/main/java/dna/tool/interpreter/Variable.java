@@ -3,8 +3,12 @@ package dna.tool.interpreter;
 public class Variable {
 
 	public String name;
+
 	public TypeInfo typeInfo;
-	int line, charAt;
+	
+	public Storage<?> data;
+
+	public int line, charAt;
 
 	public Variable(String name, TypeInfo typeInfo, int line, int charAt) {
 		super();
