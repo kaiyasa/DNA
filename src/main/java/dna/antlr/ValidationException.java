@@ -12,12 +12,16 @@ public class ValidationException extends IllegalStateException {
 	}
 
 	public ValidationException(ParserRuleContext ctx, Exception e) {
-		super(message(ctx.getStart(), ""), e);
+		this(ctx.getStart(), e);
 
 	}
 
 	public ValidationException(ParserRuleContext ctx, String fmt, Object... args) {
 		this(ctx.getStart(), fmt, args);
+	}
+
+	public ValidationException(Token symbol, Exception e) {
+		super(message(symbol, ""), e);
 	}
 
 	public ValidationException(Token symbol, String fmt, Object... args) {

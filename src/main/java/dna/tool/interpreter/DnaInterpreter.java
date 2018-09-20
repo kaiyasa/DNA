@@ -11,8 +11,8 @@ import dna.antlr.DnaParser;
 import dna.antlr.ExceptionUsingErrorListener;
 import dna.antlr.ParserFactory;
 import dna.antlr.ValidationException;
+import dna.antlr.DnaParser.AssignmentContext;
 import dna.antlr.DnaParser.SimpleDefinitionContext;
-import dna.antlr.DnaParser.TypeContext;
 
 public class DnaInterpreter extends DnaCommonVisitor<Void> {
 	private ParserFactory<DnaParser> parserFactory = new ParserFactory<>(DnaLexer::new, DnaParser::new);
@@ -47,17 +47,36 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> {
 				throw new LogicException(type, "unknown type specifier category");
 		});
 
-		ctx.identifier().stream().forEach((definition) -> {
-			String name = definition.ID().getText();
+		ctx.identifier().stream().forEach((identifier) -> {
+			String name = identifier.getText();
 
-			if (symbols.containsKey(name)) {
-				Variable old = variable(name);
-				throw new ValidationException(definition, "redefinition of variable '%s' from line %d:%d", name,
-						old.line, old.charAt);
-			}
-			symbols.put(name, variable(definition.getStart(), name, typeInfo));
+			Variable previous = variable(name);
+			if (previous != null)
+				throw new ValidationException(identifier, "redefinition of variable '%s' from line %d:%d", name,
+						previous.line, previous.charAt);
+
+			symbols.put(name, variable(identifier.getStart(), name, typeInfo));
 		});
 
 		return null;
+	}
+
+	@Override
+	public Void visitAssignment(AssignmentContext ctx) {
+		String name = ctx.identifier().getText();
+		Variable identifier = variable(name);
+
+		if (identifier == null)
+			throw new ValidationException(ctx.identifier(), "undefined variable '%s'", name);
+
+		Storage<?> data = new ExpressionVisitor().visit(ctx.expression());
+
+		if (identifier.typeInfo.match(data.get().getClass())) {
+			identifier.data = data;
+			return null;
+		}
+
+		throw new ValidationException(ctx.identifier(), "type mismatch on expression");
+
 	}
 }

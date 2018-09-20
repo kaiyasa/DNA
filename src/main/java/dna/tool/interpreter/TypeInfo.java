@@ -1,11 +1,13 @@
 package dna.tool.interpreter;
 
-public abstract class TypeInfo {
+public interface TypeInfo {
 
 	enum Kind {
 		INT, STRING;
 	}
 
-	public abstract Kind kind();
+	public Kind kind();
+
+	public boolean match(Class<?> type);
 
 }

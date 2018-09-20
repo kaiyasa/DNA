@@ -6,12 +6,16 @@ import dna.antlr.DnaParseTestBase;
 import dna.antlr.DnaParser;
 import dna.antlr.DnaParser.XUnitContext;
 import dna.antlr.ValidationException;
+import dna.tool.interpreter.TypeInfo.Kind;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.fail;
 
 public class DnaInterpreterTest extends DnaParseTestBase<Void, XUnitContext, DnaInterpreter> {
+
+	private Variable item;
+
 	public DnaInterpreterTest() {
 		super(DnaInterpreter::new, DnaParser::xUnit);
 	}
@@ -66,5 +70,56 @@ public class DnaInterpreterTest extends DnaParseTestBase<Void, XUnitContext, Dna
 		}
 	}
 
-	private Variable item;
+	@Test
+	public void assignInteger() {
+		actOn("int B\nB = 42");
+
+		item = checkVariable("B", Kind.INT);
+		assertThat(dereferenceAsInteger(item.data), equalTo(42));
+	}
+
+	@Test
+	public void assignString() {
+		actOn("string B\nB = \"Don't panic\"");
+
+		item = checkVariable("B", Kind.STRING);
+		assertThat(dereferenceAsString(item.data), equalTo("Don't panic"));
+	}
+
+	@Test
+	public void undefinedVariable() {
+		try {
+			actOn("B = 666");
+			fail("exception expected");
+		} catch (ValidationException e) {
+			assertThat(e.getMessage(), containsString("undefined variable"));
+		}
+	}
+
+	@Test
+	public void typeMismatchLiteral() {
+		try {
+			actOn("string B \n B = 666");
+			fail("exception expected");
+		} catch (ValidationException e) {
+			assertThat(e.getMessage(), containsString("type mismatch"));
+		}
+	}
+
+	private Integer dereferenceAsInteger(Storage<?> value) {
+		return value.typeOf(Integer.class).get();
+	}
+
+	private String dereferenceAsString(Storage<?> value) {
+		return value.typeOf(String.class).get();
+	}
+
+	private Variable checkVariable(String name, Kind type) {
+		Variable identifier = visitor.variable(name);
+
+		assertThat(identifier, not(nullValue()));
+		assertThat(identifier.name, equalTo(name));
+		assertThat(identifier.typeInfo.kind(), equalTo(type));
+		return identifier;
+	}
 }
