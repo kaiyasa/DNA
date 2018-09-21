@@ -11,6 +11,8 @@ import dna.tool.interpreter.TypeInfo.Kind;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
+import java.util.Optional;
+
 public class DnaInterpreterTest extends DnaParseTestBase<Void, XUnitContext, DnaInterpreter> {
 
 	private Variable item;
@@ -96,11 +98,13 @@ public class DnaInterpreterTest extends DnaParseTestBase<Void, XUnitContext, Dna
 	}
 
 	private Variable assertVariable(String name, Kind type) {
-		Variable identifier = visitor.variable(name);
+		Optional<Variable> identifier = visitor.variable(name);
+		assertThat(identifier.isPresent(), equalTo(true));
 
-		assertThat(identifier, not(nullValue()));
-		assertThat(identifier.name, equalTo(name));
-		assertThat(identifier.typeInfo.kind(), equalTo(type));
-		return identifier;
+		Variable variable = identifier.get();
+		assertThat(variable.name, equalTo(name));
+		assertThat(variable.typeInfo.kind(), equalTo(type));
+
+		return variable;
 	}
 }

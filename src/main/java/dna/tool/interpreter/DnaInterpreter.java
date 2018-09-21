@@ -2,6 +2,7 @@ package dna.tool.interpreter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -26,8 +27,8 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> {
 		return visit(parser.xUnit());
 	}
 
-	public Variable variable(String name) {
-		return symbols.get(name);
+	public Optional<Variable> variable(String name) {
+		return Optional.ofNullable(symbols.get(name));
 	}
 
 	private Variable variable(Token token, String name, TypeInfo ti) {
@@ -50,10 +51,10 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> {
 		ctx.identifier().stream().forEach((identifier) -> {
 			String name = identifier.getText();
 
-			Variable previous = variable(name);
-			if (previous != null)
+			variable(name).ifPresent((previous) -> {
 				throw new ValidationException(identifier, "redefinition of variable '%s' from line %d:%d", name,
 						previous.line, previous.charAt);
+			});
 
 			symbols.put(name, variable(identifier.getStart(), name, typeInfo));
 		});
@@ -64,10 +65,8 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> {
 	@Override
 	public Void visitAssignment(AssignmentContext ctx) {
 		String name = ctx.identifier().getText();
-		Variable identifier = variable(name);
-
-		if (identifier == null)
-			throw new ValidationException(ctx.identifier(), "undefined variable '%s'", name);
+		Variable identifier = variable(name)
+				.orElseThrow(() -> new ValidationException(ctx.identifier(), "undefined variable '%s'", name));
 
 		Storage<?> data = new ExpressionVisitor().visit(ctx.expression());
 
