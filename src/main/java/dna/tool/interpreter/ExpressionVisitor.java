@@ -3,6 +3,7 @@ package dna.tool.interpreter;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import dna.antlr.DnaParser;
+import dna.antlr.DnaParser.ExpressionParenContext;
 import dna.antlr.DnaParser.IdentifierContext;
 import dna.antlr.DnaParser.LiteralContext;
 import dna.antlr.ValidationException;
@@ -32,6 +33,11 @@ public class ExpressionVisitor extends DnaCommonVisitor<Storage<?>> {
 		Variable identifier = model.variable(name)
 				.orElseThrow(() -> new ValidationException(ctx, "undefined variable '%s'", name));
 		return identifier.data;
+	}
+
+	@Override
+	public Storage<?> visitExpressionParen(ExpressionParenContext ctx) {
+		return visit(ctx.expression());
 	}
 
 	private Integer asInteger(TerminalNode terminal) {

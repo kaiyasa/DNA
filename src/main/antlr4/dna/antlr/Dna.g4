@@ -38,12 +38,17 @@ assignment
   ;
 
 expression
-  : '(' expr1=expression ')'
+  : expressionParen
   | expr1=expression op=('*'|'/') expr2=expression
   | expr1=expression op=('+'|'-') expr2=expression
   | callSite
   | atom
   ;
+  
+expressionParen
+  : '(' expression ')'
+    ;
+
 
 callSite
   : identifier '(' expression (',' expression)* ')'
