@@ -3,10 +3,18 @@ package dna.tool.interpreter;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import dna.antlr.DnaParser;
+import dna.antlr.DnaParser.IdentifierContext;
 import dna.antlr.DnaParser.LiteralContext;
 import dna.antlr.ValidationException;
 
 public class ExpressionVisitor extends DnaCommonVisitor<Storage<?>> {
+
+	private DnaModel model;
+
+	public ExpressionVisitor(DnaModel model) {
+		this.model = model;
+	}
+
 	@Override
 	public Storage<?> visitLiteral(LiteralContext ctx) {
 		if (ctx.getToken(DnaParser.INT, 0) != null)
@@ -15,6 +23,15 @@ public class ExpressionVisitor extends DnaCommonVisitor<Storage<?>> {
 			return new InternalStorage<String>(unquote(ctx.STRING()));
 
 		throw new LogicException(ctx, "unknown literal category");
+	}
+
+	@Override
+	public Storage<?> visitIdentifier(IdentifierContext ctx) {
+		String name = ctx.getText();
+
+		Variable identifier = model.variable(name)
+				.orElseThrow(() -> new ValidationException(ctx, "undefined variable '%s'", name));
+		return identifier.data;
 	}
 
 	private Integer asInteger(TerminalNode terminal) {

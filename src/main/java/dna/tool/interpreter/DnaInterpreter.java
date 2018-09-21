@@ -15,7 +15,7 @@ import dna.antlr.ValidationException;
 import dna.antlr.DnaParser.AssignmentContext;
 import dna.antlr.DnaParser.SimpleDefinitionContext;
 
-public class DnaInterpreter extends DnaCommonVisitor<Void> {
+public class DnaInterpreter extends DnaCommonVisitor<Void> implements DnaModel {
 	private ParserFactory<DnaParser> parserFactory = new ParserFactory<>(DnaLexer::new, DnaParser::new);
 	private DnaParser parser;
 
@@ -27,6 +27,7 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> {
 		return visit(parser.xUnit());
 	}
 
+	@Override
 	public Optional<Variable> variable(String name) {
 		return Optional.ofNullable(symbols.get(name));
 	}
@@ -68,7 +69,8 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> {
 		Variable identifier = variable(name)
 				.orElseThrow(() -> new ValidationException(ctx.identifier(), "undefined variable '%s'", name));
 
-		Storage<?> data = new ExpressionVisitor().visit(ctx.expression());
+		Storage<?> data = Optional.ofNullable(new ExpressionVisitor(this).visit(ctx.expression()))
+				.orElseThrow(() -> new LogicException(ctx.expression(), "result of expression processing is null"));
 
 		if (identifier.typeInfo.match(data.get().getClass())) {
 			identifier.data = data;

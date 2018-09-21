@@ -87,6 +87,24 @@ public class DnaInterpreterTest extends DnaParseTestBase<Void, XUnitContext, Dna
 		assertThat(exception(), containsString("type mismatch"));
 	}
 
+	@Test
+	public void assignFromVariable() {
+		actOn("int B, C \n B = 12 \n C = B");
+
+		item = assertVariable("B", Kind.INT);
+		assertThat(dereferenceAsInteger(item.data), equalTo(12));
+
+		item = assertVariable("C", Kind.INT);
+		assertThat(dereferenceAsInteger(item.data), equalTo(12));
+	}
+
+	@Test
+	public void typeMismatchIdentifier() {
+		errorOn("int B \n string C \n B = 12 \n C = B");
+
+		assertThat(exception(), containsString("type mismatch"));
+	}
+
 	// helper or common code and tests
 
 	private Integer dereferenceAsInteger(Storage<?> value) {
