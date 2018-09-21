@@ -1,5 +1,7 @@
 package dna.antlr;
 
+import static org.junit.Assert.fail;
+
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -28,6 +30,21 @@ public class DnaParseTestBase<R, C extends ParseTree, V extends DnaVisitor<R>> e
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
+	}
+
+	protected String exception() {
+		return ve.getMessage();
+	}
+
+	protected IllegalStateException errorOn(String text) {
+		try {
+			ve = null;
+			actOn(text);
+			fail("exception expected");
+		} catch (IllegalStateException e) {
+			// eat it
+		}
+		return ve;
 	}
 
 }
