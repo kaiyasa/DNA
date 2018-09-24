@@ -38,17 +38,12 @@ assignment
   ;
 
 expression
-  : expressionParen
+  : '(' expr1=expression ')'
   | expr1=expression op=('*'|'/') expr2=expression
   | expr1=expression op=('+'|'-') expr2=expression
   | callSite
   | atom
   ;
-  
-expressionParen
-  : '(' expression ')'
-    ;
-
 
 callSite
   : identifier '(' expression (',' expression)* ')'
@@ -73,6 +68,11 @@ literal
 
 K_int : 'int' ;
 K_string : 'string' ;
+
+PLUS : '+' ;
+DASH : '-' ;
+ASTERISK : '*' ;
+SLASH : '/' ;
 
 ID
   : [A-Za-z_][A-Za-z0-9_]*
