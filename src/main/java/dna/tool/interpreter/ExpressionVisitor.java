@@ -1,9 +1,17 @@
 package dna.tool.interpreter;
 
+import static java.util.stream.Collectors.toList;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import dna.antlr.DnaParser;
+import dna.antlr.DnaParser.CallSiteContext;
 import dna.antlr.DnaParser.ExpressionContext;
 import dna.antlr.DnaParser.IdentifierContext;
 import dna.antlr.DnaParser.LiteralContext;
@@ -108,4 +116,16 @@ public class ExpressionVisitor extends DnaCommonVisitor<Storage<?>> {
 
 		throw new LogicException(ctx, "unknown literal category");
 	}
+
+	@Override
+	public Storage<?> visitCallSite(CallSiteContext ctx) {
+		Map<String, Function<List<Storage<?>>, Storage<?>>> routines = new HashMap<>();
+		String name = ctx.identifier().getText();
+		List<Storage<?>> args = ctx.expression().stream().map((x) -> visit(x)).collect(toList());
+
+		if (routines.containsKey(name))
+			return routines.get(name).apply(args);
+		throw new ValidationException(ctx.identifier(), "undefined routine name '%s'", name);
+	}
+
 }
