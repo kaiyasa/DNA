@@ -1,7 +1,10 @@
 package dna.tool.interpreter;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.junit.Test;
 
@@ -13,9 +16,8 @@ import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
 public class ExpressionVisitorTest extends DnaParseTestBase<Storage<?>, ExpressionContext, ExpressionVisitor> {
-
 	private String strValue;
-	private Object intValue;
+	private Integer intValue;
 
 	public ExpressionVisitorTest() {
 		super(() -> new ExpressionVisitor(new TestModel()), DnaParser::expression);
@@ -23,7 +25,9 @@ public class ExpressionVisitorTest extends DnaParseTestBase<Storage<?>, Expressi
 
 	static class TestModel implements DnaModel {
 
-		private Map<String, Variable> symbols;
+		private Map<String, Variable> symbols = new HashMap<>();
+
+		private Map<String, Function<List<Storage<?>>, Storage<?>>> routines = new HashMap<>();
 
 		@Override
 		public Optional<Variable> variable(String name) {
@@ -37,6 +41,16 @@ public class ExpressionVisitorTest extends DnaParseTestBase<Storage<?>, Expressi
 
 		TestModel add(String name, Integer value) {
 			symbols.put(name, new Variable(name, new IntType(), -1, -1));
+			return this;
+		}
+
+		@Override
+		public Optional<Function<List<Storage<?>>, Storage<?>>> routine(String name) {
+			return Optional.ofNullable(routines.get(name));
+		}
+
+		TestModel add(String name, Function<List<Storage<?>>, Storage<?>> code) {
+			routines.put(name, code);
 			return this;
 		}
 
@@ -117,14 +131,32 @@ public class ExpressionVisitorTest extends DnaParseTestBase<Storage<?>, Expressi
 		assertThat(exception(), containsString("type mismatch"));
 	}
 
-	private void exprAsString(String text) {
-		actOn(text);
-		strValue = actRet.typeOf(String.class).get();
+	@Test
+	public void undefinedRoutine() {
+		errorOn("unknown()");
+
+		assertThat(exception(), containsString("undefined routine"));
 	}
 
-	private void exprAsInt(String text) {
+	@Test
+	public void routineCall() {
+		// create a model with the pass routine and inject it into the visitor
+		TestModel model = new TestModel().add("pass", (args) -> args.get(0));
+		visitorFactory = () -> new ExpressionVisitor(model);
+
+		exprAsInt("pass(42)");
+
+		assertThat(intValue, equalTo(42));
+	}
+
+	private String exprAsString(String text) {
 		actOn(text);
-		intValue = actRet.typeOf(Integer.class).get();
+		return strValue = actRet.typeOf(String.class).get();
+	}
+
+	private Integer exprAsInt(String text) {
+		actOn(text);
+		return intValue = actRet.typeOf(Integer.class).get();
 	}
 
 }

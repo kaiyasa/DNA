@@ -1,8 +1,10 @@
 package dna.tool.interpreter;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -21,6 +23,13 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> implements DnaModel {
 
 	private Map<String, Variable> symbols = new HashMap<>();
 
+	private Map<String, Function<List<Storage<?>>, Storage<?>>> routines = new HashMap<>();
+
+	@Override
+	public Optional<Function<List<Storage<?>>, Storage<?>>> routine(String name) {
+		return Optional.ofNullable(routines.get(name));
+	}
+
 	public Void run(CharStream source) {
 		parser = parserFactory.create(source, new ExceptionUsingErrorListener());
 
@@ -34,6 +43,24 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> implements DnaModel {
 
 	private Variable variable(Token token, String name, TypeInfo ti) {
 		return new Variable(name, ti, token.getLine(), token.getCharPositionInLine());
+	}
+
+	@Override
+	public Void visitAssignment(AssignmentContext ctx) {
+		String name = ctx.identifier().getText();
+		Variable identifier = variable(name)
+				.orElseThrow(() -> new ValidationException(ctx.identifier(), "undefined variable '%s'", name));
+
+		Storage<?> data = Optional.ofNullable(new ExpressionVisitor(this).visit(ctx.expression()))
+				.orElseThrow(() -> new LogicException(ctx.expression(), "result of expression processing is null"));
+
+		if (identifier.typeInfo.match(data.get().getClass())) {
+			identifier.data = data;
+			return null;
+		}
+
+		throw new ValidationException(ctx.identifier(), "type mismatch on expression");
+
 	}
 
 	@Override
@@ -61,24 +88,6 @@ public class DnaInterpreter extends DnaCommonVisitor<Void> implements DnaModel {
 		});
 
 		return null;
-	}
-
-	@Override
-	public Void visitAssignment(AssignmentContext ctx) {
-		String name = ctx.identifier().getText();
-		Variable identifier = variable(name)
-				.orElseThrow(() -> new ValidationException(ctx.identifier(), "undefined variable '%s'", name));
-
-		Storage<?> data = Optional.ofNullable(new ExpressionVisitor(this).visit(ctx.expression()))
-				.orElseThrow(() -> new LogicException(ctx.expression(), "result of expression processing is null"));
-
-		if (identifier.typeInfo.match(data.get().getClass())) {
-			identifier.data = data;
-			return null;
-		}
-
-		throw new ValidationException(ctx.identifier(), "type mismatch on expression");
-
 	}
 
 }

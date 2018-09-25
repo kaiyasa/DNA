@@ -46,7 +46,7 @@ expression
   ;
 
 callSite
-  : identifier '(' expression (',' expression)* ')'
+  : identifier '(' ( expression (',' expression)* )? ')'
     ;
 
 atom
